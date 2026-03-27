@@ -1,0 +1,20 @@
+# Environments
+venv/
+env/
+ENV/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

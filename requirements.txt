@@ -1,4 +1,6 @@
+pandas
+numpy
+scikit-learn
 fastapi
 uvicorn
-scikit-learn
-pandas
+python-whois

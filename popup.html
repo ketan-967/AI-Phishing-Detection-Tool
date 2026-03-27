@@ -1,16 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Phishing Detector</title>
-  <style>
-    body { width: 300px; padding: 10px; font-family: sans-serif; }
-    h3 { color: #333; }
-    p { font-size: 14px; }
-  </style>
+    <style>
+        :root {
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --primary: #3498db;
+            --safe: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+        }
+        body { 
+            width: 300px; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background-color: var(--bg);
+            margin: 0;
+            padding: 15px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h3 { margin-top: 0; color: #333; font-size: 16px; }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .Legitimate { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .Phishing { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .Suspicious { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        
+        .confidence-container { margin-top: 15px; text-align: left; }
+        .label { font-size: 11px; color: #888; margin-bottom: 5px; }
+        .progress-bar {
+            background: #eee;
+            border-radius: 10px;
+            height: 8px;
+            width: 100%;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.8; }
+        #allow-btn { background: var(--safe); color: white; }
+        #block-btn { background: var(--danger); color: white; }
+        #reset-btn { background: #95a5a6; color: white; margin-top: 10px; width: 100%; }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-  <h3>AI Phishing Detector</h3>
-  <p id="status">Analyzing current site...</p>
-  <script src="popup.js"></script>
+    <div class="card">
+        <h3>AI Security Shield</h3>
+        
+        <div id="loading-section">
+            <div class="loader"></div>
+            <p style="font-size: 12px; color: #666;">Analyzing Site...</p>
+        </div>
+
+        <div id="result-section" class="hidden">
+            <div id="status-badge" class="status-badge">Checking...</div>
+            
+            <div class="confidence-container">
+                <div class="label">AI CONFIDENCE SCORE</div>
+                <div class="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+                <div id="confidence-text" style="font-size: 12px; font-weight: bold; margin-top: 5px;">0%</div>
+            </div>
+
+            <div class="btn-group">
+                <button id="allow-btn">TRUST SITE</button>
+                <button id="block-btn">BLOCK SITE</button>
+            </div>
+            <button id="reset-btn">RESET ALL SETTINGS</button>
+        </div>
+
+        <p id="domain-text" style="font-size: 10px; color: #aaa; margin-top: 15px; word-break: break-all;"></p>
+    </div>
+    <script src="popup.js"></script>
 </body>
 </html>

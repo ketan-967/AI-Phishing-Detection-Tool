@@ -6,39 +6,66 @@ import pandas as pd
 
 app = FastAPI()
 
-# The CORS middleware must be added before any routes are defined.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all HTTP methods
-    allow_headers=["*"],  # Allows all headers
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Load the trained machine learning model.
+# Load the model
 try:
     with open("model.pkl", "rb") as f:
         model = pickle.load(f)
 except FileNotFoundError:
-    print("Error: model.pkl not found. Please run train_model.py first.")
     model = None
 
-# Define the data model for the incoming request body.
-class URLRequest(BaseModel):
-    features: list
+COLUMNS = [
+    'having_IPhaving_IP_Address', 'URLURL_Length', 'Shortining_Service',
+    'having_At_Symbol', 'double_slash_redirecting', 'Prefix_Suffix',
+    'having_Sub_Domain', 'SSLfinal_State', 'Domain_registeration_length',
+    'Favicon', 'port', 'HTTPS_token', 'Request_URL', 'URL_of_Anchor',
+    'Links_in_tags', 'SFH', 'Submitting_to_email', 'Abnormal_URL',
+    'Redirect', 'on_mouseover', 'RightClick', 'popUpWidnow', 'Iframe',
+    'age_of_domain', 'DNSRecord', 'web_traffic', 'Page_Rank', 'Google_Index',
+    'Links_pointing_to_page', 'Statistical_report'
+]
 
-# Define API endpoints.
-@app.get("/")
-def root():
-    return {"message": "Phishing Detection API is running"}
+class URLRequest(BaseModel):
+    url: str # We receive the raw URL now for better extraction
 
 @app.post("/predict")
 def predict(request: URLRequest):
-    if model is None:
-        return {"error": "Model not loaded."}
+    if model is None: return {"error": "Model missing"}
     
-    df = pd.DataFrame([request.features])
+    url = request.url
+    
+    # --- Feature Extraction Logic (-1, 0, 1) ---
+    features = {col: 0 for col in COLUMNS}
+    
+    # URL Length
+    features['URLURL_Length'] = -1 if len(url) > 75 else (0 if len(url) > 54 else 1)
+    # HTTPS
+    features['SSLfinal_State'] = 1 if url.startswith('https') else -1
+    # @ Symbol
+    features['having_At_Symbol'] = -1 if '@' in url else 1
+    # Dots (Subdomains)
+    dots = url.split('//')[-1].count('.')
+    features['having_Sub_Domain'] = -1 if dots > 3 else (0 if dots == 3 else 1)
+    # Prefix/Suffix (Dash in domain)
+    features['Prefix_Suffix'] = -1 if '-' in url.split('/')[2] else 1
+
+    df = pd.DataFrame([features], columns=COLUMNS)
+    
+    # Get prediction and confidence
     prediction = model.predict(df)[0]
-    result = "Phishing" if prediction == -1 else "Legitimate"
-    
-    return {"prediction": result}
+    probabilities = model.predict_proba(df)[0]
+    confidence = max(probabilities)
+
+    # Determine Result based on Confidence
+    if confidence < 0.70: # If model is less than 70% sure
+        result = "Suspicious"
+    else:
+        result = "Phishing" if prediction == -1 else "Legitimate"
+
+    return {"prediction": result, "confidence": round(confidence * 100, 2)}
